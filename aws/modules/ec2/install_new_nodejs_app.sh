@@ -10,10 +10,10 @@ newgrp docker
 
 git clone -b feature1 --single-branch https://gitlab.com/smartosc3/roadmap.git /home/ubuntu/roadmap
 
-if [ -d "/home/ubuntu/myapp" ]; then
-    cd /home/ubuntu/myapp
+if [ -d "/home/ubuntu/roadmap" ]; then
+    cd /home/ubuntu/roadmap
 else
-    echo "/home/ubuntu/myapp does not exist"
+    echo "/home/ubuntu/roadmap does not exist"
     exit 1
 fi
 sudo docker build -t roadmap .
