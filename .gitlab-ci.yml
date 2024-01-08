@@ -1,25 +1,32 @@
-build-job:
+stages:
+  - build
+  - deploy_infra
+
+build_nodejs_app:
   stage: build
   script:
-    - echo "Hello, $GITLAB_USER_LOGIN!"
+    - cd app
+    - docker build -t app .
+    - docker run -dp 3000:3000 your-node-app
+    - curl http://localhost:3000
 
-test-job1:
-  stage: test
+deploy_infrastructure:
+  stage: deploy_infra
+  image: hashicorp/terraform:light
   script:
-    - echo "This job tests something"
+    - cd /roadmap/aws
+    - terraform init
+    - terraform apply -auto-approve
+  dependencies:
+    - build_nodejs_app     # Ensures the build job has passed
 
-test-job2:
-  stage: test
-  script:
-    - echo "This job tests something, but takes more time than test-job1."
-    - echo "After the echo commands complete, it runs the sleep command for 20 seconds"
-    - echo "which simulates a test that runs 20 seconds longer than test-job1"
-    - sleep 20
-
-deploy-prod:
-  stage: deploy
-  script:
-    - echo "This job deploys something from the $CI_COMMIT_BRANCH branch."
-  environment: production
+# deploy_application:
+#  stage: deploy_app
+#  script:
+#    - scp -i deploy_key ./scripts/userdata.sh ubuntu@<EC2_IP>:/tmp/
+#    - scp -i deploy_key ./app/* ubuntu@<EC2_IP>:/app/
+#    - ssh -i deploy_key ubuntu@<EC2_IP> 'bash /tmp/userdata.sh'
+#  dependencies:
+#    - deploy_infrastructure 
   only:
     - feature2
