@@ -31,12 +31,12 @@ access_instance:
   dependencies:
     - deploy_infrastructure
 
-#build_application:
-#  stage: deploy
-#  script:
-#    - cd app
- #   - docker build -t app .
-  #  - docker run -dp 3000:3000 your-node-app
-   # - deploy_application 
+build_application:
+  stage: deploy
+  script:
+    - cd app
+    - docker build -t app .
+    - docker run -dp 3000:3000 your-node-app
+    - deploy_application 
   only:
     - feature2
