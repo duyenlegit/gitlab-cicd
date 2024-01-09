@@ -1,32 +1,42 @@
 stages:
   - build
-  - deploy_infra
+  - test
+  - deploy
 
-build_nodejs_app:
-  stage: build
-  script:
-    - cd app
-    - docker build -t app .
-    - docker run -dp 3000:3000 your-node-app
-    - curl http://localhost:3000
+variables:
+  AWS_ACCESS_KEY_ID: "your_access_key_id"
+  AWS_SECRET_ACCESS_KEY: "your_secret_access_key"
+  AWS_DEFAULT_REGION: "ap-southeast-1"
+
+image: hashicorp/terraform:light
 
 deploy_infrastructure:
-  stage: deploy_infra
-  image: hashicorp/terraform:light
+  stage: build
   script:
     - cd /roadmap/aws
-    - terraform init
     - terraform apply -auto-approve
-  dependencies:
-    - build_nodejs_app     # Ensures the build job has passed
+    - echo $(terraform output -raw instance_public_ip) > instance_public_ip.txt
+  artifacts:
+    paths:
+      - instance_public_ip.txt
+    expire_in: 1 hour # Set a suitable expiration time for the artifact
 
-# deploy_application:
-#  stage: deploy_app
+access_instance:
+  stage: test
+  script:
+    - INSTANCE_IP=$(cat instance_public_ip.txt)
+    - scp -i deploy_key ./scripts/userdata.sh ubuntu@INSTANCE_IP:/tmp/
+    - scp -i deploy_key ./app/* ubuntu@<EC2_IP>:/app/
+    - ssh -i deploy_key ubuntu@<EC2_IP> 'bash /tmp/userdata.sh'
+  dependencies:
+    - deploy_infrastructure
+
+#build_application:
+#  stage: deploy
 #  script:
-#    - scp -i deploy_key ./scripts/userdata.sh ubuntu@<EC2_IP>:/tmp/
-#    - scp -i deploy_key ./app/* ubuntu@<EC2_IP>:/app/
-#    - ssh -i deploy_key ubuntu@<EC2_IP> 'bash /tmp/userdata.sh'
-#  dependencies:
-#    - deploy_infrastructure 
+#    - cd app
+ #   - docker build -t app .
+  #  - docker run -dp 3000:3000 your-node-app
+   # - deploy_application 
   only:
     - feature2
