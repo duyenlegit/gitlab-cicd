@@ -1,21 +1,26 @@
-<!--
-    Create an index.ejs file inside the views directory. This file will be the template for your frontend:
---> 
-
 <!DOCTYPE html>
 <html>
 <head>
   <title>Simple Node.js App</title>
   <style>
     body { font-family: Arial, sans-serif; }
+    form { margin-bottom: 20px; }
   </style>
 </head>
 <body>
-  <h3>Pham Hoang Nghia</h3>
+  <h1>Messages</h1>
+
+  <!-- Message Submission Form -->
+  <form action="/add-message" method="post">
+    <input type="text" name="text" placeholder="Type your message here" required>
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- Display Messages -->
   <ul>
-    <% for(var i=0; i < messages.length; i++) { %>
-      <li><%= messages[i].text %></li>
-    <% } %>
+    <% messages.forEach(function(message) { %>
+      <li><%= message.text %></li>
+    <% }); %>
   </ul>
 </body>
 </html>
